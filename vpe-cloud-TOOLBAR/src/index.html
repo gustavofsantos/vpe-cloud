@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>VPE-qGMP PE</title>
+	<script type="text/javascript">
+		mxBasePath = 'mxgraph/javascript/src';
+	</script>
+
+	<!-- carrega e inicializa a biblioteca -->
+	<script type="text/javascript" src="mxgraph/javascript/mxClient.js"></script>
+
+	<script type="text/javascript">
+		function main() {
+			if (!mxClient.isBrowserSupported()) {
+				mxUtils.error("Navegador não suportado.", 200, false);
+
+			}
+			else {
+				/* configuração do elemento toolbar */
+				var toolbarContainer = document.createElement('div');
+				toolbarContainer.style.position = 'absolute';
+				toolbarContainer.style.overflow = 'hidden';
+				toolbarContainer.style.padding = '2px';
+				toolbarContainer.style.left = '0px';
+				toolbarContainer.style.top = '26px';
+				toolbarContainer.style.width = '24px';
+				toolbarContainer.style.bottom = '0px';
+
+				/* adiciona o elemento no corpo do documento */
+				document.body.appendChild(toolbarContainer);
+				
+				/* cria o objeto toolbar */
+				var toolbar = new mxToolbar(toolbarContainer);
+				toolbar.enabled = false;
+
+				/* cria o div no grafo usando o container default */
+				container = document.createElement('div');
+				container.style.position = 'absolute';
+				container.style.overflow = 'hidden';
+
+				/* configura a posição do container do grafo para não ficar abaixo do toolbar */
+				container.style.left = '24px';
+				container.style.top = '26px';
+				container.style.bottom = '0px';
+				container.style.right = '0px';
+
+				/* adiciona o container do grafo no documento */
+				document.body.appendChild(container);
+
+				var modelo = new mxGraphModel();
+				var graph = new mxGraph(container, modelo);
+
+				/* habilita o arrastar e soltar */
+				graph.dropEnabled = true;
+
+				mxDragSource.prototype.getDropTarget = function(graph, x, y) {
+					var celula = graph.getCellAt(x, y);
+
+					if (!graph.isValidDropTarget(celula)) {
+						celula = null;
+					}
+
+					/* retorna a celula somente se o local onde for soltar ela for um local valido i.e. em cima da camada do grafo */
+					return celula;
+				};
+
+				// habilita conexões entre elementos
+				graph.setConnectable(false);
+				graph.setMultigraph(false);
+
+				/* função que adiciona elementos no grafo */
+				var addCelula = function(icone, w, h, estilo) {
+					var celula = new mxCell(null, new mxGeometry(0, 0, w, h), estilo);
+					celula.setVertex(true);
+
+					addToolbarItem(graph, toolbar, celula, icone);
+				};
+
+				toolbar.addLine();
+
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
+				toolbar.addLine();
+
+
+				/*
+				new mxRubberband(graph);
+
+				var camada0 = graph.getDefaultParent();
+
+				graph.getModel().beginUpdate();
+				try {
+					var v1 = graph.insertVertex(camada0, null, 'teste1', 20, 20, 80, 30);
+					var v2 = graph.insertVertex(camada0, null, 'teste2', 200, 150, 80, 30);
+				} catch(e) {
+					// statements
+					console.log(e);
+				} finally {
+					graph.getModel().endUpdate();
+				}
+				*/
+			}
+
+			function addToolbarItem(graph, toolbar, prototipo, imagem) {
+				var fun = function(graph, evt, celula) {
+					graph.stopEditing(false);
+
+					var pt = graph.getPointForEvent(evt);
+					var vert = graph.getModel().cloneCell(prototipo);
+					vert.geometry.x = pt.x;
+					vert.geometry.y = pt.y;
+
+					graph.setSelectionCells(graph.importCells([vert], 0, 0, celula));
+				}
+
+				var img = toolbar.addMode(null, imagem, fun);
+				mxUtils.makeDraggable(img, graph, fun);
+			}
+		};
+	</script>
+</head>
+<body onload="main(document.getElementById('graphContainer'))">
+	<div id="graphContainer" style="position:relative"></div>
+</body>
+</html>
