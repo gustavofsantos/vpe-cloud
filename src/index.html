@@ -10,6 +10,40 @@
 	<script type="text/javascript" src="mxgraph/javascript/mxClient.js"></script>
 
 	<script type="text/javascript">
+		/* nesta área são construídos os desenhos vetoriais */
+		function Teste1() {
+			mxCylinder.call(this);
+		};
+
+		mxUtils.extend(Teste1, mxCylinder);
+
+		Teste1.prototype.extrude = 10;
+
+		Teste1.prototype.redrawPath = function(path, x, y, w, h, flag) {
+			path.moveTo(0, 0);
+			path.lineTo(0, h);
+			path.lineTo(w, h);
+			path.lineTo(w, 0);
+			path.lineTo(0, 0);
+
+			//path.moveTo(x + w, y + h);
+			//path.lineTo(x - w, y);
+			//path.lineTo(x, y - h);
+
+			/*
+			path.moveTo(0, dy);
+			path.lineTo(w - dx, dy);
+			path.lineTo(w, 0);
+			path.moveTo(w - dx, dy);
+			path.lineTo(w - dx, h);
+			*/
+		};
+
+		/* registra globalmente as portas customizadas */
+		mxCellRenderer.prototype.defaultShapes['t1'] = Teste1;
+	</script>
+
+	<script type="text/javascript">
 		function main() {
 			if (!mxClient.isBrowserSupported()) {
 				mxUtils.error("Navegador não suportado.", 200, false);
@@ -69,21 +103,52 @@
 				graph.setMultigraph(false);
 
 				/* função que adiciona elementos no grafo */
-				var addCelula = function(icone, w, h, estilo) {
-					var celula = new mxCell(null, new mxGeometry(0, 0, w, h), estilo);
+				var addCelula = function(imagem, texto, w, h, estilo) {
+					if (texto == 't1') {
+						/* cria o estilo customizado do shape T1 */
+						var style = graph.getStylesheet().getDefaultVertexStyle();
+						style[mxConstants.STYLE_SHAPE] = 't1';
+						style[mxConstants.STYLE_SPACING_TOP] = Teste1.prototype.extrude;
+						style[mxConstants.STYLE_SPACING_RIGHT] = Teste1.prototype.extrude;
+						var celula = new mxCell(null, new mxGeometry(0, 0, w, h), style);
+					}
+					else {
+						var celula = new mxCell(null, new mxGeometry(0, 0, w, h), estilo);
+					}
+					
 					celula.setVertex(true);
 
-					addToolbarItem(graph, toolbar, celula, icone);
+					adicionaItemToolbar(graph, texto, toolbar, celula, imagem);
 				};
 
+				/* configura a toolbar */
 				toolbar.addLine();
 
-				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
-				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
-				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
-				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 100, 60, '');
+				addCelula('t1', 't1', 60, 30, '');
+				addCelula('mxgraph/javascript/examples/editors/images/ellipse.gif', 'teste', 100, 60, '');
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 'teste', 100, 60, '');
+				addCelula('mxgraph/javascript/examples/editors/images/rectangle.gif', 'teste', 100, 60, '');
 				toolbar.addLine();
 
+				/* add botões */
+				var divBotoes = document.getElementById('divBotoes');
+				var btnAgrupar = document.createElement('input');
+				var btnDesagrupar = document.createElement('input');
+
+				btnAgrupar.setAttribute('type', 'button');
+				btnAgrupar.setAttribute('name', 'Agrupar');
+				btnAgrupar.setAttribute('value', 'Agrupar');
+
+				btnDesagrupar.setAttribute('type', 'button');
+				btnDesagrupar.setAttribute('name', 'Desagrupar');
+				btnDesagrupar.setAttribute('value', 'Desagrupar');
+
+				btnAgrupar.addEventListener('click', agrupaSelecionados);
+				btnDesagrupar.addEventListener('click', desagrupaSelecionado);
+
+				divBotoes.appendChild(btnAgrupar);
+				divBotoes.appendChild(btnDesagrupar);
+				/*/
 
 				/*
 				new mxRubberband(graph);
@@ -103,7 +168,7 @@
 				*/
 			}
 
-			function addToolbarItem(graph, toolbar, prototipo, imagem) {
+			function adicionaItemToolbar(graph, texto, toolbar, prototipo, imagem) {
 				var fun = function(graph, evt, celula) {
 					graph.stopEditing(false);
 
@@ -115,13 +180,35 @@
 					graph.setSelectionCells(graph.importCells([vert], 0, 0, celula));
 				}
 
-				var img = toolbar.addMode(null, imagem, fun);
+				var img = toolbar.addMode(texto, imagem, fun);
 				mxUtils.makeDraggable(img, graph, fun);
 			}
+
+			function agrupaSelecionados() {
+				/* variável para armazenar o contexto das celulas * /
+				var graphCreateGroupCell = graph.createGroupCell;
+
+				var grupo = graphCreateGroupCell.apply(this, )
+				*/
+				var celulasSelecionadas = graph.getSelectionCells();
+				console.log(celulasSelecionadas);
+			}
+		};
+
+		
+
+		function desagrupaSelecionado() {
+			console.log("Desagrupar selecionados.");
 		};
 	</script>
 </head>
 <body onload="main(document.getElementById('graphContainer'))">
+	<div id="divBotoes"
+		style="width:100%;padding-top:8px;padding-left:24px;padding-bottom:8px;">
+		<!--
+		<input type="button" value="Agrupar" id='agrupar' onclick="main.agrupaSelecionados()" />
+	-->
+	</div>
 	<div id="graphContainer" style="position:relative"></div>
 </body>
 </html>
